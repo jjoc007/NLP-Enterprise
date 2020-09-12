@@ -1,7 +1,7 @@
 import mailbox
 import uuid
 import hashlib
-from utils.constants import *
+from src.utils.constants import *
 
 def extractattachements(message):
     if message.get_content_maintype() == 'multipart':

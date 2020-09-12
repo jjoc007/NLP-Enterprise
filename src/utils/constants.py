@@ -1,5 +1,21 @@
 import nltk
 import string
+import pandas as pd
+from texthero import preprocessing
+
+pd.options.display.max_colwidth = 100
+pd.set_option("display.max_rows", 999)
+NUM_TOP_WORDS = 20
+
+custom_pipeline = [preprocessing.fillna,
+                   preprocessing.lowercase,
+                   preprocessing.remove_digits,
+                   preprocessing.remove_punctuation,
+                   preprocessing.remove_diacritics,
+                   preprocessing.remove_stopwords,
+                   preprocessing.remove_whitespace,
+                   preprocessing.remove_urls
+                   ]
 
 string.punctuation = r"""!"#$%&'()*+,./:;<=>?@[\]^_`{|}~"""
 
