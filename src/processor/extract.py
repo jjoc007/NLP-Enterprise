@@ -1,4 +1,5 @@
 from .processor import *
+from ..dynamo.file_metadata import *
 import textract
 import unidecode
 import hashlib
@@ -7,6 +8,7 @@ import boto3
 import botocore
 import magic
 import re
+
 
 def process(bucket, item):
     s3 = boto3.resource('s3')
@@ -19,34 +21,33 @@ def process(bucket, item):
             raise
 
     if magic.from_file("/tmp/" + item, mime=True) in MIME_VALID.keys():
-        try:
-            file_name_md5 = hashlib.md5(item.encode('utf-8')).hexdigest()
-            mime_type = magic.from_file("/tmp/" + item, mime=True)
-            ext = MIME_VALID.get(mime_type)
-            text = unidecode.unidecode(
-                str(textract.process("/tmp/" + item, extension=ext).decode('utf8')))
 
-            text = re.sub('\W+', ' ', text.lower())
-            process_text(item, file_name_md5, text)
+        file_name_md5 = hashlib.md5(item.encode('utf-8')).hexdigest()
+        mime_type = magic.from_file("/tmp/" + item, mime=True)
+        ext = MIME_VALID.get(mime_type)
+        text = unidecode.unidecode(
+            str(textract.process("/tmp/" + item, extension=ext).decode('utf8')))
 
-            # guardar en mongo
-            file_row = {
-                "_id": file_name_md5,
-                "extension": ext,
-                "mime_type": mime_type,
-                "origin": {
-                    "type": "web_page",
-                    "url": "https://www.udistrital.edu.co/"
-                },
-                "name": item,
-                "md5_name": file_name_md5,
-                "date_extraction": datetime.now(),
-                "location_s3": ""
-            }
+        text = re.sub('\W+', ' ', text.lower())
+        process_text(item, file_name_md5, text)
 
-            mongo_saver.save_file_metadata(file_row)
+        # guardar en dynamo
+        file_row = {
+            "file_id": file_name_md5,
+            "extension": ext,
+            "mime_type": mime_type,
+            "origin": {
+                "type": "web_page",
+                "url": "https://www.udistrital.edu.co/"
+            },
+            "name": item,
+            "md5_name": file_name_md5,
+            "date_extraction": datetime.now().strftime("%m/%d/%Y, %H:%M:%S"),
+            "bucket_s3": bucket,
+            "item_s3":item
+        }
+        put_file_metadata(file_row)
 
-        except:
-            print("Error Procesando archivo")
 
     return {'result': "Success"}
+

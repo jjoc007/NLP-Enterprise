@@ -1,48 +1,44 @@
 import sys
 import texthero as hero
 from src.utils.constants import *
-import mongo.saver as mongo_saver
+import src.dynamo.file_dictionary as file_dictionary
 
 
 def process_text(real_name, file_name_md5, text_input):
-    try:
 
-        text_input = replace_entities(text_input)
+    text_input = replace_entities(text_input)
 
-        dataDict = {
-            'text': [text_input]
-        }
-        df = pd.DataFrame(dataDict)
+    dataDict = {
+        'text': [text_input]
+    }
+    df = pd.DataFrame(dataDict)
 
-        df['clean_data'] = hero.clean(df['text'], pipeline=custom_pipeline)
-        df['clean_data'] = hero.remove_stopwords(df['clean_data'], stopwords)
-        top_words = hero.visualization.top_words(df['clean_data'])
+    df['clean_data'] = hero.clean(df['text'], pipeline=custom_pipeline)
+    df['clean_data'] = hero.remove_stopwords(df['clean_data'], stopwords)
+    top_words = hero.visualization.top_words(df['clean_data'])
 
-        clean_top_words = clean_tokens_words(top_words)
-        #n = clean_top_words.head(40).plot.bar(rot=90, title="Top 40 words of "+real_name)
-        #n.get_figure().savefig(file_name_md5+'_plot.jpg', format='jpg', bbox_inches="tight")
+    clean_top_words = clean_tokens_words(top_words)
+    #n = clean_top_words.head(40).plot.bar(rot=90, title="Top 40 words of "+real_name)
+    #n.get_figure().savefig(file_name_md5+'_plot.jpg', format='jpg', bbox_inches="tight")
 
-        y = hero.wordcloud(df['clean_data'], max_words=40, return_figure=True)
-        y.savefig(file_name_md5+'_cloud_word.jpg', format='jpg')
+    y = hero.wordcloud(df['clean_data'], max_words=40, return_figure=True)
+    y.savefig(file_name_md5+'_cloud_word.jpg', format='jpg')
 
-        words = []
-        if len(clean_top_words.keys()) > 0:
-            for word in clean_top_words.keys():
-                words.append({
-                    "word": word.replace("-", " "),
-                    "frequency": int(top_words.get(key=word))
-                })
+    words = []
+    if len(clean_top_words.keys()) > 0:
+        for word in clean_top_words.keys():
+            words.append({
+                "word": word.replace("-", " "),
+                "frequency": int(top_words.get(key=word))
+            })
 
-        data = {
-            "_id": file_name_md5,
-            "word_frequency": words
-        }
+    data = {
+        "file_id": file_name_md5,
+        "word_frequency": words
+    }
 
-        mongo_saver.save_file_dictionary(data)
+    file_dictionary.put_file_dictionary(data)
 
-
-    except:
-        print("Unexpected error:", sys.exc_info()[0])
 
 
 def clean_tokens_words(top_words):

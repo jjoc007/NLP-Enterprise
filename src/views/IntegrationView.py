@@ -16,7 +16,7 @@ def extract():
 
 
 def process(bucket, item):
-    return custom_response(json.loads(ext.process(bucket,item)), 200)
+    return custom_response(ext.process(bucket,item), 200)
 
 
 def custom_response(res, status_code):

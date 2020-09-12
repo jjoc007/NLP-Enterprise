@@ -1,4 +1,5 @@
 import sys
+import boto3
 import texthero as hero
 from src.utils.constants import *
 import mongo.saver as mongo_saver
@@ -23,7 +24,7 @@ def process_text(real_name, file_name_md5, text_input):
         #n.get_figure().savefig(file_name_md5+'_plot.jpg', format='jpg', bbox_inches="tight")
 
         y = hero.wordcloud(df['clean_data'], max_words=40, return_figure=True)
-        y.savefig(file_name_md5+'_cloud_word.jpg', format='jpg')
+        y.savefig("/tmp/"+file_name_md5+'_cloud_word.jpg', format='jpg')
 
         words = []
         if len(clean_top_words.keys()) > 0:
