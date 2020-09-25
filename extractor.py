@@ -20,7 +20,7 @@ for fn in os.listdir(LOCATION_FILES + "files/"):
             text = re.sub('\W+', ' ', text.lower())
             process_text(fn, file_name_md5, text)
 
-            # guardar en mongo
+            # guardar en dynamo
             file_row = {
                 "_id": file_name_md5,
                 "extension": ext,

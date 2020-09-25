@@ -1,0 +1,1 @@
+pip install -r requirements.txt --target /home/development/nlp/NLP-Enterprise-aws/resources/nlp_libraries/python/lib/python3.8/site-packages/ --upgrade

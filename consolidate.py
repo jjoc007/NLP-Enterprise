@@ -1,4 +1,4 @@
-from mongo.saver import *
+from dynamo.saver import *
 import pandas as pd
 import texthero as hero
 

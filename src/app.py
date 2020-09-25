@@ -1,6 +1,6 @@
 from flask import Flask
-from .config import app_config
-from .views.IntegrationView import extractor_api as extractor_blueprint
+from src.config import app_config
+from src.views.IntegrationView import extractor_api as extractor_blueprint
 
 
 def create_app(env_name):

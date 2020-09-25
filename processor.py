@@ -2,7 +2,7 @@ import sys
 import boto3
 import texthero as hero
 from src.utils.constants import *
-import mongo.saver as mongo_saver
+import dynamo.saver as mongo_saver
 
 
 def process_text(real_name, file_name_md5, text_input):

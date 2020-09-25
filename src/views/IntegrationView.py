@@ -6,9 +6,7 @@ extractor_api = Blueprint('extractor_api', __name__)
 
 @extractor_api.route('/extract', methods=['POST'])
 def extract():
-
     data = request.get_json()
-    resp = None
     bucket = data['bucket']
     item = data['item']
 
@@ -20,9 +18,6 @@ def process(bucket, item):
 
 
 def custom_response(res, status_code):
-    """
-    Custom Response Function
-    """
     return Response(
         mimetype="application/json",
         response=json.dumps(res),
