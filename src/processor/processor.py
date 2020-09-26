@@ -1,13 +1,11 @@
-import sys
+import src.s3.s3 as s3
 import texthero as hero
 from src.utils.constants import *
-import src.dynamo.file_dictionary as file_dictionary
+import src.dynamo.tables as tables
 
 
 def process_text(real_name, file_name_md5, text_input):
-
     text_input = replace_entities(text_input)
-
     dataDict = {
         'text': [text_input]
     }
@@ -18,11 +16,8 @@ def process_text(real_name, file_name_md5, text_input):
     top_words = hero.visualization.top_words(df['clean_data'])
 
     clean_top_words = clean_tokens_words(top_words)
-    #n = clean_top_words.head(40).plot.bar(rot=90, title="Top 40 words of "+real_name)
-    #n.get_figure().savefig(file_name_md5+'_plot.jpg', format='jpg', bbox_inches="tight")
-
-    y = hero.wordcloud(df['clean_data'], max_words=40, return_figure=True)
-    y.savefig(file_name_md5+'_cloud_word.jpg', format='jpg')
+    save_plot(clean_top_words, real_name, file_name_md5)
+    save_cloud_word(df['clean_data'], file_name_md5)
 
     words = []
     if len(clean_top_words.keys()) > 0:
@@ -37,8 +32,21 @@ def process_text(real_name, file_name_md5, text_input):
         "word_frequency": words
     }
 
-    file_dictionary.put_file_dictionary(data)
+    tables.put_file_dictionary(data)
 
+
+def save_plot(clean_top_words, real_name, file_name_md5):
+    n = clean_top_words.head(40).plot.bar(rot=90, title="Top 40 words of "+real_name)
+    n.get_figure().savefig("/tmp/nlp_tmp_files/" + file_name_md5+'_plot.jpg', format='jpg', bbox_inches="tight")
+
+    s3.upload_file("/tmp/nlp_tmp_files/" + file_name_md5+'_plot.jpg', "nlp-bucket-corpus", 'results/'+file_name_md5+ '_plot.jpg')
+
+
+def save_cloud_word(clean_data, file_name_md5):
+    y = hero.wordcloud(clean_data, max_words=40, return_figure=True)
+    y.savefig("/tmp/nlp_tmp_files/" +file_name_md5+'_cloud_word.jpg', format='jpg')
+
+    s3.upload_file("/tmp/nlp_tmp_files/" + file_name_md5 +'_cloud_word.jpg', "nlp-bucket-corpus", 'results/' + file_name_md5 +'_cloud_word.jpg')
 
 
 def clean_tokens_words(top_words):
@@ -50,6 +58,7 @@ def clean_tokens_words(top_words):
         words.append((key, top_words.get(key=key)))
 
     return pd.DataFrame(words).set_index(0)[1]
+
 
 def replace_entities(input):
     input = input.lower()

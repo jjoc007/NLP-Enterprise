@@ -1,25 +1,18 @@
+import src.s3.s3 as s3
 from .processor import *
-from ..dynamo.file_metadata import *
+from ..dynamo.tables import *
 import textract
 import unidecode
 import hashlib
 from datetime import datetime
-import boto3
-import botocore
+
+
 import magic
 import re
 
 
 def process(bucket, item):
-    s3 = boto3.resource('s3')
-    try:
-        s3.Bucket(bucket).download_file(item, "/tmp/" + item)
-    except botocore.exceptions.ClientError as e:
-        if e.response['Error']['Code'] == "404":
-            print("The object does not exist.")
-        else:
-            raise
-
+    s3.download_file(bucket, item)
     if magic.from_file("/tmp/" + item, mime=True) in MIME_VALID.keys():
 
         file_name_md5 = hashlib.md5(item.encode('utf-8')).hexdigest()
@@ -48,6 +41,7 @@ def process(bucket, item):
         }
         put_file_metadata(file_row)
 
+        s3.clean_files()
 
     return {'result': "Success"}
 
