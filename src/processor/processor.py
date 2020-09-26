@@ -17,7 +17,7 @@ def process_text(real_name, file_name_md5, text_input):
 
     clean_top_words = clean_tokens_words(top_words)
     save_plot(clean_top_words, real_name, file_name_md5)
-    save_cloud_word(df['clean_data'], file_name_md5)
+    #save_cloud_word(df['clean_data'], file_name_md5)
 
     words = []
     if len(clean_top_words.keys()) > 0:
