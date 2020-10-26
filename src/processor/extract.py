@@ -1,6 +1,6 @@
 import src.s3.s3 as s3
 from .processor import *
-from ..dynamo.tables import *
+from src.neo4j.service.file import *
 import textract
 import unidecode
 import hashlib
@@ -22,7 +22,17 @@ def process(bucket, item):
             str(textract.process("/tmp/" + item, extension=ext).decode('utf8')))
 
         text = re.sub('\W+', ' ', text.lower())
-        process_text(item, file_name_md5, text)
+
+        #guardar file
+        file_json = {
+            "uid" : file_name_md5,
+            "name": item,
+            "url": "https://www.udistrital.edu.co/"
+        }
+
+        file_object = save_file(file_json)
+
+        process_text(item, file_object, text)
 
         # guardar en dynamo
         file_row = {
@@ -39,7 +49,6 @@ def process(bucket, item):
             "bucket_s3": bucket,
             "item_s3":item
         }
-        put_file_metadata(file_row)
 
         s3.clean_files()
 

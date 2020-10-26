@@ -1,10 +1,10 @@
 import src.s3.s3 as s3
 import texthero as hero
 from src.utils.constants import *
-import src.dynamo.tables as tables
+from src.neo4j.service.word import *
 
 
-def process_text(real_name, file_name_md5, text_input):
+def process_text(real_name, file_object, text_input):
     text_input = replace_entities(text_input)
     dataDict = {
         'text': [text_input]
@@ -16,23 +16,18 @@ def process_text(real_name, file_name_md5, text_input):
     top_words = hero.visualization.top_words(df['clean_data'])
 
     clean_top_words = clean_tokens_words(top_words)
-    save_plot(clean_top_words, real_name, file_name_md5)
+    save_plot(clean_top_words, real_name, file_object.uid)
     #save_cloud_word(df['clean_data'], file_name_md5)
 
     words = []
     if len(clean_top_words.keys()) > 0:
-        for word in clean_top_words.keys():
-            words.append({
+        for word in clean_top_words.keys()[0:40]:
+
+            word_json = {
                 "word": word.replace("-", " "),
                 "frequency": int(top_words.get(key=word))
-            })
-
-    data = {
-        "file_id": file_name_md5,
-        "word_frequency": words
-    }
-
-    tables.put_file_dictionary(data)
+            }
+            save_word(word_json, file_object)
 
 
 def save_plot(clean_top_words, real_name, file_name_md5):
@@ -53,7 +48,7 @@ def clean_tokens_words(top_words):
     words = []
 
     for key in top_words.keys():
-        if len(key) < 3:
+        if len(key) <= 3:
             continue
         words.append((key, top_words.get(key=key)))
 
