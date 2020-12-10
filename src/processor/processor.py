@@ -4,6 +4,7 @@ from src.utils.constants import *
 from src.neo4j.service.word import *
 
 
+
 def process_text(real_name, file_object, text_input):
     text_input = replace_entities(text_input)
     dataDict = {
